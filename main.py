@@ -30,6 +30,29 @@ shotgun_img = pygame.transform.scale(pygame.image.load("shotgun_normal.png").con
 shotgun_img_inverted = pygame.transform.scale(pygame.image.load("shotgun_inverted.png").convert_alpha(), (87, 18))
 shotgun_sound = pygame.mixer.Sound("shotgun_fire.wav")
 
+#enemy
+enemy_list = []
+enemy_rects = []
+enemy_sprite = pygame.transform.scale(pygame.image.load("enemy_img.png").convert_alpha(), (100,100))
+
+class enemy():
+    def __init__(self, new_pos):
+        #Apply new variables
+        self.rect = enemy_sprite.get_rect(center=new_pos)
+        enemy_rects.append(self.rect)
+        self.image = screen.blit(enemy_sprite, self.rect.center)
+        self.pos = new_pos
+        enemy_list.append(self)
+    
+    def kill(self):
+        enemy_list.remove(self)
+        enemy_rects.remove(self.rect)
+
+    def update(self):
+        self.image = screen.blit(enemy_sprite, self.pos)
+
+enemy1 = enemy(pygame.Vector2(100,100))
+
 def calculate_shotgun_angle():
     #Calculate direction of mouse cursor from shotgun, then calculate angle
     mouse_pos = pygame.mouse.get_pos()
@@ -61,7 +84,9 @@ class bullet():
             bullets.remove(self)
 
         #if hit enemy
-            #enemy.kill
+        if bullet_rect.collidelist(enemy_rects) != -1:
+            bullets.remove(self)
+            enemy_list[bullet_rect.collidelist(enemy_rects)].kill()
 
 #Floor
 floor_pos = pygame.Vector2(0, height - 100)
@@ -99,14 +124,14 @@ while running:
 
 
     # fill the screen with a color to wipe away anything from last frame
-    screen.fill("white")
+    screen.fill((255,255,255))
 
     # RENDER YOUR GAME HERE
 
     #draw collision objects
     #Run through list of all collision obejcts and draw them within the level
     for i in range(len(collision_objects)):
-        pygame.draw.rect(screen, "grey", collision_objects[i])
+        pygame.draw.rect(screen, (120,120,120), collision_objects[i])
 
     #collision + gravity
     collision_index = player_rect.collidelist(collision_objects)
@@ -161,8 +186,12 @@ while running:
 
     #player draw - draw at player_pos each frame
     player_rect = pygame.Rect((player_pos.x, player_pos.y, 100, 100))
-    pygame.draw.rect(screen, "blue", player_rect)
+    pygame.draw.rect(screen, (0,0,255), player_rect)
     player_pos += player_vel
+
+    #enemy draw
+    for enemy in enemy_list:
+        enemy.update()
 
     #shotgun draw
     #Calculate angle that shotgun must face and assign to variable.
